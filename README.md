@@ -9,6 +9,7 @@ These steps are the expected happy path from a fresh checkout to a playable MP4.
 ```bash
 npm install
 cp .env.example .env
+# Edit .env and set TOGETHER_API_KEY before running the full workflow.
 npm run check
 npm start
 ```
@@ -17,7 +18,7 @@ Then:
 
 1. Open <http://localhost:5678>.
 2. Create the local n8n owner account when prompted.
-3. Import [n8n/workflows/01_generate_practice_exam_walkthrough.json](/Volumes/WorkSSD/repositories/StudyBuddies/n8n_practice_exam_generator/n8n/workflows/01_generate_practice_exam_walkthrough.json).
+3. Import [n8n/workflows/01_generate_practice_exam_walkthrough.json](n8n/workflows/01_generate_practice_exam_walkthrough.json).
 4. Open the imported workflow and click **Execute workflow**.
 5. Wait for the renderer status to become `done`. A fully narrated 40-question render can take a while.
 6. Open the MP4 from `data/artifacts/<job-id>/practice-exam-walkthrough.mp4`.
@@ -27,7 +28,7 @@ Then:
 npm run stop
 ```
 
-The checked-in [questions.json](/Volumes/WorkSSD/repositories/StudyBuddies/n8n_practice_exam_generator/questions.json) already contains the 40-question n8n practice exam. Replace that file later if you want a different exam.
+The checked-in [questions.json](questions.json) already contains the 40-question n8n practice exam. Replace that file later if you want a different exam.
 
 ## Expected Output
 

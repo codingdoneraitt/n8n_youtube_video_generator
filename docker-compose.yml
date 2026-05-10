@@ -47,7 +47,7 @@ services:
       N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:-replace-with-a-long-random-string}
       N8N_USER_MANAGEMENT_DISABLED: "false"
       N8N_DEFAULT_BINARY_DATA_MODE: filesystem
-      N8N_BINARY_DATA_STORAGE_PATH: /home/node/.n8n/binaryData
+      N8N_STORAGE_PATH: /home/node/.n8n
       N8N_BLOCK_ENV_ACCESS_IN_NODE: "true"
       N8N_RESTRICT_FILE_ACCESS_TO: /files
       EXECUTIONS_DATA_PRUNE: "true"
