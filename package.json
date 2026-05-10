@@ -9,7 +9,7 @@
     "build": "npm run build --workspace services/remotion-renderer",
     "dev:renderer": "npm run dev --workspace services/remotion-renderer",
     "lint": "npm run lint --workspace services/remotion-renderer && npm run validate:questions && npm run validate:workflows",
-    "test": "npm run test --workspace services/remotion-renderer",
+    "test": "node --test scripts/*.test.mjs && npm run test --workspace services/remotion-renderer",
     "coverage": "npm run build && npm run coverage --workspace services/remotion-renderer",
     "check": "npm run hygiene && npm run build && npm run lint && npm test && npm run coverage && npm run security:static",
     "hygiene": "node scripts/check-repo-hygiene.mjs",
