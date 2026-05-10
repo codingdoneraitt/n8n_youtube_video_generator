@@ -7,7 +7,6 @@ Turn a `questions.json` file into a fully narrated practice exam walkthrough vid
 These steps are the expected happy path from a fresh checkout to a playable MP4.
 
 ```bash
-cd /Volumes/WorkSSD/repositories/StudyBuddies/n8n_practice_exam_generator
 npm install
 cp .env.example .env
 npm run check
