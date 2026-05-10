@@ -1,6 +1,6 @@
-# n8n Practice Exam Generator
+# n8n YouTube Video Generator
 
-Generate a polished practice-exam walkthrough video from `questions.json` with n8n orchestration and a typed Remotion renderer.
+Turn a `questions.json` file into a fully narrated practice exam walkthrough video. n8n orchestrates the pipeline, Together AI handles TTS, Remotion renders the video, and YouTube upload is scaffolded behind a safety gate.
 
 ## Run This POC
 
