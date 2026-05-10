@@ -1,0 +1,34 @@
+{
+  "name": "n8n-practice-exam-generator",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "docker compose up --build",
+    "stop": "docker compose down",
+    "build": "npm run build --workspace services/remotion-renderer",
+    "dev:renderer": "npm run dev --workspace services/remotion-renderer",
+    "lint": "npm run lint --workspace services/remotion-renderer && npm run validate:questions && npm run validate:workflows",
+    "test": "npm run test --workspace services/remotion-renderer",
+    "coverage": "npm run build && npm run coverage --workspace services/remotion-renderer",
+    "check": "npm run hygiene && npm run build && npm run lint && npm test && npm run coverage && npm run security:static",
+    "hygiene": "node scripts/check-repo-hygiene.mjs",
+    "hooks:install": "node scripts/install-hooks.mjs",
+    "validate:questions": "node scripts/validate-questions.mjs questions.json --exact=40",
+    "validate:workflows": "node scripts/validate-workflows.mjs",
+    "security": "npm run security:static && npm run security:deps",
+    "security:static": "node scripts/security-scan.mjs",
+    "security:deps": "npm audit --audit-level=high",
+    "docker:config": "docker compose config",
+    "smoke": "npm run build && node scripts/smoke-render.mjs"
+  },
+  "workspaces": [
+    "services/remotion-renderer"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

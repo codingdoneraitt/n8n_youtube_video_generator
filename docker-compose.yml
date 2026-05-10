@@ -1,0 +1,94 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-practice_exam_generator}
+      POSTGRES_USER: ${POSTGRES_USER:-practice_exam}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-practice_exam} -d ${POSTGRES_DB:-practice_exam_generator}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:${N8N_IMAGE_TAG:-2.19.4}
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      postgres:
+        condition: service_healthy
+      remotion-renderer:
+        condition: service_started
+    ports:
+      - "${N8N_PORT:-5678}:5678"
+    environment:
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_DATABASE: ${POSTGRES_DB:-practice_exam_generator}
+      DB_POSTGRESDB_USER: ${POSTGRES_USER:-practice_exam}
+      DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
+      GENERIC_TIMEZONE: ${GENERIC_TIMEZONE:-Europe/Amsterdam}
+      TZ: ${GENERIC_TIMEZONE:-Europe/Amsterdam}
+      N8N_HOST: ${N8N_HOST:-localhost}
+      N8N_PORT: 5678
+      N8N_PROTOCOL: ${N8N_PROTOCOL:-http}
+      N8N_EDITOR_BASE_URL: ${N8N_EDITOR_BASE_URL:-http://localhost:5678}
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:-replace-with-a-long-random-string}
+      N8N_USER_MANAGEMENT_DISABLED: "false"
+      N8N_DEFAULT_BINARY_DATA_MODE: filesystem
+      N8N_BINARY_DATA_STORAGE_PATH: /home/node/.n8n/binaryData
+      N8N_BLOCK_ENV_ACCESS_IN_NODE: "true"
+      N8N_RESTRICT_FILE_ACCESS_TO: /files
+      EXECUTIONS_DATA_PRUNE: "true"
+      EXECUTIONS_DATA_MAX_AGE: 168
+      RENDERER_BASE_URL: http://remotion-renderer:3030
+      RENDERER_AUTH_TOKEN: ${RENDERER_AUTH_TOKEN:-}
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./n8n/workflows:/files/workflows:ro
+      - ./questions.json:/files/questions.json:ro
+      - ./data:/files/data
+
+  remotion-renderer:
+    build:
+      context: .
+      dockerfile: services/remotion-renderer/Dockerfile
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - "${RENDERER_PORT:-3030}:3030"
+    environment:
+      PORT: 3030
+      STORAGE_DIR: /data/artifacts
+      PUBLIC_BASE_URL: ${RENDERER_PUBLIC_BASE_URL:-http://localhost:3030}
+      MAX_CONCURRENCY: ${RENDERER_MAX_CONCURRENCY:-1}
+      RENDERER_AUTH_TOKEN: ${RENDERER_AUTH_TOKEN:-}
+      MAX_BODY_BYTES: ${RENDERER_MAX_BODY_BYTES:-26214400}
+      TOGETHER_API_KEY: ${TOGETHER_API_KEY:-}
+      TOGETHER_TTS_MODEL: ${TOGETHER_TTS_MODEL:-hexgrad/Kokoro-82M}
+      TOGETHER_TTS_VOICE: ${TOGETHER_TTS_VOICE:-af_bella}
+      TOGETHER_TTS_SPEED: ${TOGETHER_TTS_SPEED:-0.95}
+    volumes:
+      - ./data/artifacts:/data/artifacts
+    shm_size: "1gb"
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3030/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  postgres_data:
+  n8n_data:

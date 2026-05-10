@@ -1,0 +1,145 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  node-quality:
+    name: Node Quality Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Repository hygiene
+        run: npm run hygiene
+
+      - name: Build
+        run: npm run build
+
+      - name: Lint and validate fixtures
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Coverage gate
+        run: |
+          mkdir -p coverage
+          npm run coverage | tee coverage/node-test-coverage.txt
+
+      - name: Publish coverage summary
+        run: |
+          {
+            echo "## Coverage"
+            echo
+            echo '```text'
+            cat coverage/node-test-coverage.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: node-test-coverage
+          path: coverage/node-test-coverage.txt
+          retention-days: 14
+
+      - name: Static security scan
+        run: npm run security:static
+
+      - name: Dependency audit
+        run: npm run security:deps
+
+  docker-quality:
+    name: Docker Quality Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: node-quality
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate Compose config
+        run: docker compose config
+
+      - name: Build renderer image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: services/remotion-renderer/Dockerfile
+          push: false
+          load: true
+          tags: n8n-practice-exam-renderer:ci
+
+      - name: Scan renderer image
+        uses: aquasecurity/trivy-action@0.30.0
+        with:
+          image-ref: n8n-practice-exam-renderer:ci
+          format: table
+          severity: CRITICAL,HIGH
+          exit-code: "1"
+          ignore-unfixed: true
+
+  workflow-contract:
+    name: Workflow Contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate n8n workflows
+        run: npm run validate:workflows
+
+      - name: Validate practice exam questions
+        run: npm run validate:questions
+
+      - name: Build render payload contract
+        run: node scripts/build-render-payload.mjs questions.json --limit=40 > /tmp/render-payload.json
+
+  all-checks:
+    name: All Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs:
+      - node-quality
+      - docker-quality
+      - workflow-contract
+    steps:
+      - name: Mark quality gate complete
+        run: echo "All CI quality gates passed."

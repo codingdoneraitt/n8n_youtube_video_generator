@@ -1,0 +1,179 @@
+{
+  "name": "Generate Practice Exam Walkthrough",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "fileSelector": "/files/questions.json",
+        "options": {
+          "dataPropertyName": "data",
+          "mimeType": "application/json",
+          "fileName": "questions.json",
+          "fileExtension": "json"
+        }
+      },
+      "id": "read-questions-file",
+      "name": "Read questions.json",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [240, 0]
+    },
+    {
+      "parameters": {
+        "operation": "fromJson",
+        "binaryPropertyName": "data",
+        "options": {}
+      },
+      "id": "extract-json",
+      "name": "Extract JSON",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [500, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = items.length === 1 ? items[0].json : items.map((item) => item.json);\nconst list = Array.isArray(raw) ? raw : (raw.questions || raw.data || []);\nif (!Array.isArray(list) || list.length === 0) throw new Error('questions.json must be an array or { questions: [...] }');\nconst normalizeOptions = (options) => {\n  if (!Array.isArray(options) || options.length < 2) throw new Error('Each question needs at least two options');\n  return options.map((option) => typeof option === 'string' ? option : (option.text || option.label || String(option)));\n};\nconst normalizeAnswers = (answers) => {\n  const arr = Array.isArray(answers) ? answers : [answers].filter(Boolean);\n  if (arr.length === 0) throw new Error('Each question needs a correct answer');\n  return arr.map(String);\n};\nconst questions = list.slice(0, 40).map((q, index) => ({\n  id: String(q.id || q.questionId || `q-${index + 1}`),\n  question: String(q.question || q.text || q.prompt),\n  options: normalizeOptions(q.options || q.answers || q.choices),\n  correctAnswers: normalizeAnswers(q.correctAnswers || q.correct_answers || q.correctAnswer || q.answer),\n  explanation: String(q.explanation || q.rationale || ''),\n  ...(q.topic ? { topic: String(q.topic) } : {}),\n  ...(q.difficulty ? { difficulty: String(q.difficulty) } : {})\n}));\nreturn [{\n  json: {\n    runId: `n8n-${Date.now()}`,\n    title: 'Practice Exam Walkthrough',\n    examTitle: 'Practice Exam',\n    sourceApp: 'questions-json',\n    dryRun: false,\n    questions,\n    audioAssets: []\n  }\n}];"
+      },
+      "id": "build-render-payload",
+      "name": "Build Render Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [760, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.RENDERER_BASE_URL || 'http://remotion-renderer:3030'}}/render",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.RENDERER_AUTH_TOKEN || ''}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{$json}}"
+      },
+      "id": "start-render",
+      "name": "Start Render",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1040, 0]
+    },
+    {
+      "parameters": {
+        "amount": 20,
+        "unit": "seconds"
+      },
+      "id": "wait-render",
+      "name": "Wait For Render",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [1280, 0],
+      "webhookId": "wait-render-placeholder"
+    },
+    {
+      "parameters": {
+        "url": "={{$env.RENDERER_BASE_URL || 'http://remotion-renderer:3030'}}/jobs/{{$json.id}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.RENDERER_AUTH_TOKEN || ''}}"
+            }
+          ]
+        }
+      },
+      "id": "render-status",
+      "name": "Render Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1520, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const job = items[0].json;\nif (job.status === 'failed') throw new Error(job.error || 'Render failed');\nconst createdAt = Date.parse(job.createdAt || new Date().toISOString());\nconst elapsedMinutes = (Date.now() - createdAt) / 60000;\nif (elapsedMinutes > 30) throw new Error(`Render timed out after ${elapsedMinutes.toFixed(1)} minutes`);\nreturn [{ json: job }];"
+      },
+      "id": "check-render-status",
+      "name": "Check Render Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1760, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.status}}",
+              "operation": "equals",
+              "value2": "done"
+            }
+          ]
+        }
+      },
+      "id": "render-done",
+      "name": "Render Done?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [2000, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    status: 'done',\n    jobId: $json.id,\n    mp4Url: $json.outputUrl,\n    metadataUrl: $json.metadataUrl,\n    localPath: `/files/data/artifacts/${$json.id}/practice-exam-walkthrough.mp4`,\n    message: 'Practice exam walkthrough render complete. Open the MP4 from the mounted data/artifacts folder.'\n  }\n}];"
+      },
+      "id": "render-complete-summary",
+      "name": "Render Complete Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2240, -120]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [[{ "node": "Read questions.json", "type": "main", "index": 0 }]]
+    },
+    "Read questions.json": {
+      "main": [[{ "node": "Extract JSON", "type": "main", "index": 0 }]]
+    },
+    "Extract JSON": {
+      "main": [[{ "node": "Build Render Payload", "type": "main", "index": 0 }]]
+    },
+    "Build Render Payload": {
+      "main": [[{ "node": "Start Render", "type": "main", "index": 0 }]]
+    },
+    "Start Render": {
+      "main": [[{ "node": "Wait For Render", "type": "main", "index": 0 }]]
+    },
+    "Wait For Render": {
+      "main": [[{ "node": "Render Status", "type": "main", "index": 0 }]]
+    },
+    "Render Status": {
+      "main": [[{ "node": "Check Render Status", "type": "main", "index": 0 }]]
+    },
+    "Check Render Status": {
+      "main": [[{ "node": "Render Done?", "type": "main", "index": 0 }]]
+    },
+    "Render Done?": {
+      "main": [
+        [{ "node": "Render Complete Summary", "type": "main", "index": 0 }],
+        [{ "node": "Wait For Render", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionTimeout": 3600,
+    "saveExecutionProgress": true
+  }
+}

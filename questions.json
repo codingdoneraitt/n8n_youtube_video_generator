@@ -1,0 +1,564 @@
+[
+  {
+    "id": "n8n-001",
+    "question": "A company wants to automate a process that triggers whenever a new row is added to a Google Sheet. Which n8n trigger type is most appropriate?",
+    "options": [
+      "Webhook Trigger",
+      "Schedule Trigger",
+      "Google Sheets Trigger (polling)",
+      "Manual Trigger"
+    ],
+    "correctAnswers": ["Google Sheets Trigger (polling)"],
+    "explanation": "The Google Sheets Trigger uses polling to periodically check for new rows. A Webhook Trigger requires an external service to push events, which Google Sheets does not natively support without Apps Script. The Schedule Trigger only fires on time intervals without inspecting data, and the Manual Trigger requires human interaction.",
+    "topic": "Triggers",
+    "difficulty": "easy"
+  },
+  {
+    "id": "n8n-002",
+    "question": "In n8n 2.0, what is the behavioral difference between clicking Save and clicking Publish on a workflow?",
+    "options": [
+      "Save exports the workflow as JSON; Publish activates it",
+      "Save persists a draft without affecting the live version; Publish pushes the workflow to production",
+      "Save and Publish are identical in n8n 2.0",
+      "Save creates a new workflow version; Publish overwrites all previous versions"
+    ],
+    "correctAnswers": ["Save persists a draft without affecting the live version; Publish pushes the workflow to production"],
+    "explanation": "n8n 2.0 introduced a Publish/Save lifecycle to decouple editing from production. Saving stores changes as a draft only, preserving the currently live version. Publish explicitly pushes the draft to production. This prevents accidental live changes during iterative editing.",
+    "topic": "Workflow Lifecycle",
+    "difficulty": "easy"
+  },
+  {
+    "id": "n8n-003",
+    "question": "Fabrikam runs n8n self-hosted in queue mode. A workflow execution is triggered but never completes, and workers appear healthy. Which component is the most likely bottleneck?",
+    "options": [
+      "The PostgreSQL connection pool is exhausted",
+      "Redis is unavailable or the BullMQ queue is stalled",
+      "The n8n main process has too many active webhook connections",
+      "The SQLite database has reached its row limit"
+    ],
+    "correctAnswers": ["Redis is unavailable or the BullMQ queue is stalled"],
+    "explanation": "In queue mode, n8n uses Redis and BullMQ to distribute executions to worker processes. If Redis becomes unavailable or a queue job stalls, workers will stop receiving new jobs even though they appear healthy. PostgreSQL exhaustion would cause errors on execution write-back, not silent hangs. SQLite is unsupported in queue mode, and webhook connection limits affect ingestion, not execution completion.",
+    "topic": "Queue Mode & Scaling",
+    "difficulty": "medium"
+  },
+  {
+    "id": "n8n-004",
+    "question": "Which database backends does n8n 2.0 support for production deployments? (Select two.)",
+    "options": [
+      "PostgreSQL",
+      "SQLite",
+      "MySQL",
+      "MongoDB",
+      "MariaDB"
+    ],
+    "correctAnswers": ["PostgreSQL", "SQLite"],
+    "explanation": "n8n 2.0 removed MySQL support and supports only PostgreSQL and SQLite. PostgreSQL is required for queue mode and multi-main deployments. SQLite (now using a pooling driver for up to ~10x faster performance) is suitable for single-instance, low-volume deployments. MongoDB, MariaDB, and MySQL are not supported.",
+    "topic": "Self-Hosting & Infrastructure",
+    "difficulty": "medium"
+  },
+  {
+    "id": "n8n-005",
+    "question": "Contoso needs to expose their n8n workflows as tools that Claude Desktop and Cursor can invoke directly. Which n8n feature enables this?",
+    "options": [
+      "MCP Client Tool node",
+      "MCP Server Trigger",
+      "Chat Hub Personal Agent",
+      "AI Agent node with HTTP tool"
+    ],
+    "correctAnswers": ["MCP Server Trigger"],
+    "explanation": "The MCP Server Trigger exposes n8n workflows as MCP (Model Context Protocol) tools that external MCP clients such as Claude Desktop, Cursor, or Lovable can discover and call. The MCP Client Tool node does the opposite -- it allows n8n agents to consume external MCP servers. Chat Hub Personal Agents and the AI Agent HTTP tool are internal orchestration patterns, not MCP server exposure mechanisms.",
+    "topic": "MCP & AI Integrations",
+    "difficulty": "medium"
+  },
+  {
+    "id": "n8n-006",
+    "question": "A workflow uses a Code node to read a file from the host filesystem. After upgrading to n8n 2.0, the operation silently fails. What is the most likely cause?",
+    "options": [
+      "Code nodes were removed in n8n 2.0",
+      "Task Runners sandbox Code nodes in isolated processes, blocking host filesystem access by default",
+      "The Code node requires a new OAuth credential in 2.0",
+      "Binary data storage was moved to S3 in 2.0, removing local file support"
+    ],
+    "correctAnswers": ["Task Runners sandbox Code nodes in isolated processes, blocking host filesystem access by default"],
+    "explanation": "n8n 2.0 enables Task Runners by default, executing Code nodes in isolated child processes sandboxed from the main n8n host. This blocks direct host filesystem access and environment variable reading. The fix is to either use the Read/Write Files node for controlled file access or to explicitly configure the Task Runner to grant access. Code nodes are still available in 2.0; S3 is optional and separate.",
+    "topic": "n8n 2.0 Breaking Changes",
+    "difficulty": "hard"
+  },
+  {
+    "id": "n8n-007",
+    "question": "Litware wants to store API credentials so they are never persisted inside n8n's database and are fetched at runtime from their existing secrets infrastructure. Which n8n feature supports this?",
+    "options": [
+      "Environment variables on the n8n host",
+      "External secrets providers (e.g., HashiCorp Vault, AWS Secrets Manager)",
+      "Credential sharing via Projects",
+      "Encrypting the n8n database at rest"
+    ],
+    "correctAnswers": ["External secrets providers (e.g., HashiCorp Vault, AWS Secrets Manager)"],
+    "explanation": "n8n's external secrets feature integrates with providers including HashiCorp Vault, AWS Secrets Manager, Azure Key Vault, GCP Secret Manager, and 1Password Connect. Secrets are fetched at runtime and never stored inside n8n's database. Environment variables are stored on the host and not governed through a secrets manager. Credential sharing via Projects still stores credentials in n8n's encrypted database. Database encryption at rest protects stored data but does not remove it from n8n's control.",
+    "topic": "Security & Secrets",
+    "difficulty": "medium"
+  },
+  {
+    "id": "n8n-008",
+    "question": "Under n8n's Sustainable Use License, which of the following activities is explicitly prohibited?",
+    "options": [
+      "Using n8n internally to automate company operations",
+      "Modifying n8n source code for internal use",
+      "Offering n8n as a managed automation service to paying customers",
+      "Self-hosting n8n on your own infrastructure"
+    ],
+    "correctAnswers": ["Offering n8n as a managed automation service to paying customers"],
+    "explanation": "The Sustainable Use License (SUL) permits internal business use, personal use, modification, and self-hosting. It explicitly prohibits hosting n8n as a paid service for others or embedding it in a product whose value substantially depends on it. This is the key commercial restriction distinguishing n8n's fair-code model from a permissive OSI open-source license.",
+    "topic": "Licensing",
+    "difficulty": "easy"
+  },
+  {
+    "id": "n8n-009",
+    "question": "A team running n8n Cloud Starter notices their workflows pause mid-month. No errors appear in logs. What is the most likely explanation?",
+    "options": [
+      "The workflow ran into a node compatibility issue",
+      "The monthly execution cap was reached and workflows are hard-stopped until the next billing cycle",
+      "n8n Cloud applies throttling to Starter plans during peak hours",
+      "The Starter plan only allows workflows to run during business hours"
+    ],
+    "correctAnswers": ["The monthly execution cap was reached and workflows are hard-stopped until the next billing cycle"],
+    "explanation": "n8n Cloud plans enforce hard execution caps per billing cycle. When the Starter plan's 2,500 execution limit is reached, workflows are paused -- not throttled or queued -- until the next cycle. There is no time-of-day throttling, no business-hours restriction, and the issue is distinct from node compatibility. Upgrading to a higher plan or switching to self-hosted Community Edition removes this constraint.",
+    "topic": "Pricing & Plans",
+    "difficulty": "easy"
+  },
+  {
+    "id": "n8n-010",
+    "question": "Contoso's n8n AI Agent workflow must maintain conversation history across multiple user messages in the same session. Which component should be added to the agent?",
+    "options": [
+      "A Set node to store messages in workflow static data",
+      "A memory node such as Simple Memory or Window Buffer Memory",
+      "A sub-workflow that re-runs the entire chain from the start",
+      "A Wait node configured with a session timeout"
+    ],
+    "correctAnswers": ["A memory node such as Simple Memory or Window Buffer Memory"],
+    "explanation": "n8n's AI Agent node integrates memory nodes (Simple Memory, Window Buffer Memory, Postgres-backed Memory, Redis-backed Memory, Zep, etc.) to maintain conversation history across turns. Without a memory node, the agent has no context of previous messages. Static data via a Set node is not designed for LLM conversation state. Re-running the entire chain is expensive and doesn't solve memory persistence. Wait nodes control execution pausing, not state.",
+    "topic": "AI Agents",
+    "difficulty": "medium"
+  },
+  {
+    "id": "n8n-011",
+    "question": "Which n8n execution mode requires PostgreSQL as the database and Redis for job queuing?",
+    "options": [
+      "Regular (main process) mode",
+      "Queue mode",
+      "Manual execution mode",
+      "Test execution mode"
+    ],
+    "correctAnswers": ["Queue mode"],
+    "explanation": "Queue mode distributes workflow executions across worker processes via a Redis-backed BullMQ queue, requiring both Redis and PostgreSQL. Regular (main process) mode handles everything in one process and can run on SQLite. Manual and test execution modes are execution types, not deployment modes, and do not dictate infrastructure requirements.",
+    "topic": "Queue Mode & Scaling",
+    "difficulty": "easy"
+  },
+  {
+    "id": "n8n-012",
+    "question": "A developer wants to allow marketing staff to chat with an AI agent without exposing workflow logic or credentials. Which n8n feature is designed for this?",
+    "options": [
+      "Sharing the workflow with view-only permissions",
+      "The Chat user role in Chat Hub",
+      "Creating a read-only API key for the workflow",
+      "Publishing the workflow as a public webhook"
+    ],
+    "correctAnswers": ["The Chat user role in Chat Hub"],
+    "explanation": "Chat Hub's Chat user role grants non-technical users access to interact with AI agents without seeing workflow internals, nodes, or credentials. It is specifically designed for end-user consumption of agent capabilities. View-only workflow permissions still expose workflow structure. A read-only API key is for programmatic access. Public webhooks expose the trigger endpoint without any access control layer.",
+    "topic": "Chat Hub",
+    "difficulty": "medium"
+  },
+  {
+    "id": "n8n-013",
+    "question": "Fabrikam installs a community node from npm. After installation, where must the node be activated before it can be used in workflows?",
+    "options": [
+      "It is automatically available in the node panel immediately after installation",
+      "It must be activated in Settings -> Community Nodes on self-hosted instances",
+      "It requires a code change in the n8n configuration file",
+      "Community nodes are only available on n8n Cloud Pro and above"
+    ],
+    "correctAnswers": ["It must be activated in Settings -> Community Nodes on self-hosted instances"],
+    "explanation": "On self-hosted n8n instances, community nodes are installed and managed via Settings -> Community Nodes. After installing a package, it becomes available in the workflow editor. Community nodes are not automatically surfaced without this step. No code or config file changes are required for standard community packages. n8n Cloud also supports community nodes depending on the plan, but the installation flow goes through the same Settings UI.",
+    "topic": "Community Nodes & Ecosystem",
+    "difficulty": "easy"
+  },
+  {
+    "id": "n8n-014",
+    "question": "A workflow running on n8n Cloud Starter uses a polling trigger that checks a REST API every 5 minutes. Approximately how many executions will this workflow consume in a 30-day month?",
+    "options": [
+      "144",
+      "720",
+      "8,640",
+      "43,200"
+    ],
+    "correctAnswers": ["8,640"],
+    "explanation": "A polling trigger firing every 5 minutes creates 12 executions per hour x 24 hours x 30 days = 8,640 executions per month. This immediately exhausts the Starter plan's 2,500-execution monthly cap in under 9 days. Understanding this calculation is critical for plan selection -- high-frequency polling workflows require at minimum the Pro plan (10,000 executions) or self-hosted Community Edition.",
+    "topic": "Pricing & Plans",
+    "difficulty": "medium"
+  },
+  {
+    "id": "n8n-015",
+    "question": "Which n8n node type allows an AI agent to call any external API as a tool, without requiring a dedicated integration node?",
+    "options": [
+      "Function node",
+      "HTTP Request node configured as a tool",
+      "Execute Workflow node",
+      "Respond to Webhook node"
+    ],
+    "correctAnswers": ["HTTP Request node configured as a tool"],
+    "explanation": "When an HTTP Request node is wrapped or configured as a tool within an AI Agent, it allows the agent to call any arbitrary REST API dynamically. This gives the agent access to APIs that don't have dedicated n8n integration nodes. The Function node (now Code node) runs custom JS/Python but isn't a tool wrapper by itself. Execute Workflow and Respond to Webhook serve different orchestration purposes.",
+    "topic": "AI Agents",
+    "difficulty": "medium"
+  },
+  {
+    "id": "n8n-016",
+    "question": "Contoso wants to prevent developers from modifying production workflows while allowing them full access to a development environment. Which n8n Enterprise feature addresses this requirement?",
+    "options": [
+      "Workflow tagging and filtering",
+      "Git-based environments with separate dev and prod instances",
+      "Read-only API tokens per workflow",
+      "Credential sharing restrictions"
+    ],
+    "correctAnswers": ["Git-based environments with separate dev and prod instances"],
+    "explanation": "n8n Enterprise supports Git-based source control and environment management, enabling separate dev/staging/prod instances where workflows are version-controlled and promoted through environments. This prevents direct production editing while giving developers full access to non-production environments. Workflow tagging is organizational. Read-only API tokens limit API access, not the UI editor. Credential sharing restrictions govern credential access, not workflow editing rights.",
+    "topic": "Enterprise Features",
+    "difficulty": "medium"
+  },
+  {
+    "id": "n8n-017",
+    "question": "What is the primary purpose of the n8n Task Runner introduced as default in version 2.0?",
+    "options": [
+      "To schedule recurring workflows at sub-second intervals",
+      "To execute Code nodes in isolated sandboxed processes separate from the main n8n process",
+      "To distribute AI model inference across multiple GPUs",
+      "To manage external API rate limiting across all workflow executions"
+    ],
+    "correctAnswers": ["To execute Code nodes in isolated sandboxed processes separate from the main n8n process"],
+    "explanation": "The Task Runner (enabled by default in n8n 2.0) runs Code nodes in isolated child processes using versioned n8nio/runners images, sandboxing JavaScript and Python execution away from the main n8n process. This improves security by preventing Code nodes from accessing host resources, environment variables, or n8n internals. It has no role in scheduling, GPU inference, or API rate limiting.",
+    "topic": "n8n 2.0 Breaking Changes",
+    "difficulty": "medium"
+  },
+  {
+    "id": "n8n-018",
+    "question": "A Litware engineer needs to build a multi-step AI pipeline where one LLM generates content, a second LLM critiques it, and a final step scores the output. Which n8n approach best supports this pattern?",
+    "options": [
+      "Three separate workflows triggered by webhooks in sequence",
+      "A single workflow with chained AI Agent or LLM Chain nodes, passing outputs as inputs",
+      "A single Code node that makes three sequential API calls to different LLMs",
+      "The n8n Chat Hub with a single model configured"
+    ],
+    "correctAnswers": ["A single workflow with chained AI Agent or LLM Chain nodes, passing outputs as inputs"],
+    "explanation": "n8n's node-based canvas allows chaining multiple LLM Chain or AI Agent nodes within a single workflow, where each node's output becomes the next node's input. This is the native pattern for sequential multi-model pipelines and avoids the overhead and latency of separate webhook-triggered workflows. A Code node making raw API calls loses n8n's abstracted credential management and observability. Chat Hub is designed for end-user conversational interaction, not pipeline orchestration.",
+    "topic": "AI Agents",
+    "difficulty": "medium"
+  },
+  {
+    "id": "n8n-019",
+    "question": "Which n8n feature lets non-technical business users interact with AI-powered workflows through a chat interface without accessing the workflow editor?",
+    "options": [
+      "The Webhook Trigger with a custom form frontend",
+      "Chat Hub with the Chat user role",
+      "The n8n REST API with a custom frontend",
+      "A public form created via the Form Trigger node"
+    ],
+    "correctAnswers": ["Chat Hub with the Chat user role"],
+    "explanation": "Chat Hub is n8n's centralized chat interface where end users interact with AI agents via conversation. The Chat user role restricts users to the chat interface only, hiding workflow internals, credentials, and the editor entirely. This is purpose-built for non-technical staff. Webhooks, the REST API, and Form Trigger nodes are valid for custom frontends but require external development work and do not provide the same access-control model.",
+    "topic": "Chat Hub",
+    "difficulty": "easy"
+  },
+  {
+    "id": "n8n-020",
+    "question": "Fabrikam's n8n Enterprise deployment must comply with SOC 2 requirements and needs a real-time audit trail of all workflow executions and credential access sent to their SIEM. Which n8n feature fulfills this?",
+    "options": [
+      "The n8n Insights dashboard",
+      "Execution history retention with manual exports",
+      "Log streaming to external SIEMs such as Splunk or Datadog",
+      "Workflow tagging with execution status badges"
+    ],
+    "correctAnswers": ["Log streaming to external SIEMs such as Splunk or Datadog"],
+    "explanation": "n8n Enterprise's log streaming feature sends real-time audit events (workflow executions, credential usage, user actions) to external SIEM platforms such as Splunk, Datadog, and others. This is required for continuous compliance monitoring. The Insights dashboard is for operational KPIs, not compliance audit trails. Manual export of execution history does not satisfy real-time SIEM requirements. Workflow tagging is organizational metadata.",
+    "topic": "Enterprise Features",
+    "difficulty": "medium"
+  },
+  {
+    "id": "n8n-021",
+    "question": "A workflow should only proceed to the next node if a field called status equals 'approved'. Which n8n node implements this conditional branching?",
+    "options": [
+      "Switch node",
+      "If node",
+      "Filter node",
+      "Merge node"
+    ],
+    "correctAnswers": ["If node"],
+    "explanation": "The If node evaluates a boolean condition and routes items down a true or false branch. For a single condition like status equals 'approved', the If node is the correct choice. The Switch node handles multiple conditions routing to different branches. The Filter node removes items that don't match a condition without splitting branches. The Merge node combines data from multiple branches.",
+    "topic": "Core Nodes & Data Flow",
+    "difficulty": "easy"
+  },
+  {
+    "id": "n8n-022",
+    "question": "Contoso uses n8n Cloud Pro. They want to deploy a workflow change through a test environment before it goes live. Which capability do they need?",
+    "options": [
+      "Duplicate the workflow and rename it 'test'",
+      "Use workflow tags to mark versions",
+      "Git-based environments -- available on Business/Enterprise, not Cloud Pro",
+      "The workflow's built-in A/B testing mode"
+    ],
+    "correctAnswers": ["Git-based environments -- available on Business/Enterprise, not Cloud Pro"],
+    "explanation": "Git-based environment management and source control in n8n are Enterprise and Business tier features, not available on Cloud Pro. Duplicating and renaming workflows is an informal workaround without deployment governance. Workflow tags are organizational labels without promotion logic. n8n does not have a native A/B testing mode for workflows.",
+    "topic": "Enterprise Features",
+    "difficulty": "hard"
+  },
+  {
+    "id": "n8n-023",
+    "question": "When running n8n in queue mode, which process is responsible for receiving incoming HTTP webhook requests?",
+    "options": [
+      "The main process",
+      "Worker processes",
+      "The webhook processor",
+      "Redis"
+    ],
+    "correctAnswers": ["The webhook processor"],
+    "explanation": "In a properly scaled queue-mode deployment, n8n recommends a dedicated webhook processor process that terminates all incoming /webhook/* HTTP traffic and enqueues execution jobs into Redis/BullMQ. Worker processes pull and execute jobs from the queue but do not listen for incoming HTTP. The main process handles the UI and API but should not be the sole webhook receiver at scale. Redis is the message broker, not an HTTP listener.",
+    "topic": "Queue Mode & Scaling",
+    "difficulty": "medium"
+  },
+  {
+    "id": "n8n-024",
+    "question": "An n8n workflow uses the Split In Batches node. What is the primary reason to use this node?",
+    "options": [
+      "To run the same workflow across multiple regions simultaneously",
+      "To process large arrays of items in smaller chunks to avoid memory exhaustion",
+      "To split a workflow into parallel branches for concurrent execution",
+      "To divide execution time evenly across worker nodes"
+    ],
+    "correctAnswers": ["To process large arrays of items in smaller chunks to avoid memory exhaustion"],
+    "explanation": "The Split In Batches node divides a large input array into smaller batches and loops through them sequentially, preventing memory exhaustion when processing thousands of items. It is not for geographic distribution, parallel branch execution (the Merge node and sub-workflows handle that), or worker load balancing.",
+    "topic": "Core Nodes & Data Flow",
+    "difficulty": "easy"
+  },
+  {
+    "id": "n8n-025",
+    "question": "Litware's security team reports CVE-2026-21858 affects their on-prem n8n deployment. The CVE is described as an unauthenticated RCE via Content-Type confusion. What is the recommended remediation?",
+    "options": [
+      "Disable all webhook endpoints in n8n",
+      "Upgrade to n8n version 1.121.0 or later (or n8n 2.0+)",
+      "Add a WAF rule blocking all POST requests to the n8n host",
+      "Rotate all credentials stored in n8n"
+    ],
+    "correctAnswers": ["Upgrade to n8n version 1.121.0 or later (or n8n 2.0+)"],
+    "explanation": "CVE-2026-21858 (Ni8mare) was silently patched in n8n version 1.121.0 and all 2.0+ releases. The correct remediation is upgrading to a patched version. Disabling webhooks would break webhook-triggered workflows and is not a sustainable fix. A WAF rule may partially mitigate but does not patch the underlying vulnerability. Credential rotation is good hygiene after a breach but does not remediate the vulnerability itself.",
+    "topic": "Security & CVEs",
+    "difficulty": "medium"
+  },
+  {
+    "id": "n8n-026",
+    "question": "A team wants n8n to pause a workflow execution and wait for a human to approve a request before continuing. Which approach correctly implements human-in-the-loop in n8n?",
+    "options": [
+      "Add a Schedule Trigger to resume the workflow after 24 hours",
+      "Use the Wait node combined with a webhook resume URL sent to the approver",
+      "Configure a polling interval on the If node",
+      "Use the Merge node in wait-for-all mode"
+    ],
+    "correctAnswers": ["Use the Wait node combined with a webhook resume URL sent to the approver"],
+    "explanation": "The Wait node pauses workflow execution and generates a unique resume URL. When an approver clicks the URL (typically sent via email or Slack), the workflow resumes from the wait point. The Schedule Trigger starts new executions rather than resuming paused ones. The If node has no polling capability. The Merge node's wait-for-all mode waits for parallel branches to converge, not for human input.",
+    "topic": "Core Nodes & Data Flow",
+    "difficulty": "medium"
+  },
+  {
+    "id": "n8n-027",
+    "question": "Fabrikam's n8n instance stores credentials encrypted in the database. The security team wants to rotate the encryption key without re-entering all credentials. Which n8n feature supports this?",
+    "options": [
+      "External secrets provider migration",
+      "The KeyManagerService for encryption-key rotation",
+      "Re-exporting and re-importing all credentials as JSON",
+      "Switching from SQLite to PostgreSQL"
+    ],
+    "correctAnswers": ["The KeyManagerService for encryption-key rotation"],
+    "explanation": "n8n's KeyManagerService (introduced in the 2.x release cycle) enables encryption key rotation for credentials stored in the n8n database without requiring re-entry of credentials. External secrets providers remove secrets from the database entirely but are a different architectural pattern. Re-exporting/importing credentials is a manual, error-prone workaround. Changing the database backend does not affect the encryption key.",
+    "topic": "Security & Secrets",
+    "difficulty": "hard"
+  },
+  {
+    "id": "n8n-028",
+    "question": "Which statement correctly describes n8n's fair-code license compared to a standard MIT or Apache 2.0 open-source license?",
+    "options": [
+      "Fair-code gives n8n users more rights than MIT because it includes a warranty",
+      "Fair-code restricts commercial hosting of n8n as a service, which MIT and Apache do not",
+      "Fair-code and MIT are functionally identical for all use cases",
+      "Fair-code means the source code is not publicly available"
+    ],
+    "correctAnswers": ["Fair-code restricts commercial hosting of n8n as a service, which MIT and Apache do not"],
+    "explanation": "n8n's Sustainable Use License (a fair-code license) explicitly prohibits offering n8n as a managed service or embedding it in a product where it provides most of the value. MIT and Apache 2.0 are permissive and allow any commercial use including resale. Fair-code does not grant a warranty -- it actually provides less legal warranty than some commercial licenses. The source code is publicly available; the restriction is on commercial hosting, not visibility.",
+    "topic": "Licensing",
+    "difficulty": "medium"
+  },
+  {
+    "id": "n8n-029",
+    "question": "An n8n AI Agent should use Pinecone as a knowledge store for retrieval-augmented generation (RAG). Which combination of nodes is required?",
+    "options": [
+      "AI Agent node + HTTP Request node pointing to Pinecone's API",
+      "AI Agent node + Pinecone Vector Store node + Embeddings node",
+      "LLM Chain node + Pinecone node + Set node",
+      "AI Agent node + PostgreSQL node with pgvector"
+    ],
+    "correctAnswers": ["AI Agent node + Pinecone Vector Store node + Embeddings node"],
+    "explanation": "A RAG pipeline in n8n requires three components: an Embeddings node to convert text into vectors, a Vector Store node (Pinecone in this case) to retrieve semantically similar documents, and an AI Agent or LLM Chain node to use the retrieved context for generation. While a raw HTTP Request to Pinecone is possible, n8n provides a purpose-built Pinecone Vector Store node that handles authentication and query abstraction. PostgreSQL with pgvector is a separate vector store option.",
+    "topic": "AI Agents",
+    "difficulty": "hard"
+  },
+  {
+    "id": "n8n-030",
+    "question": "Contoso wants to build workflows that an AI model can generate from natural language descriptions rather than building them manually. Which n8n capability supports this?",
+    "options": [
+      "The n8n Template Library",
+      "AI Workflow Builder",
+      "The HTTP Request node with an OpenAI connection",
+      "The Code node running a custom LLM call"
+    ],
+    "correctAnswers": ["AI Workflow Builder"],
+    "explanation": "n8n's AI Workflow Builder is a built-in text-to-workflow generator where users describe their automation in natural language and n8n produces a working workflow canvas they can review and refine. The Template Library provides pre-built community workflows but requires manual selection. Using the HTTP Request node or Code node to call an LLM is a custom build approach, not the platform's native text-to-workflow feature.",
+    "topic": "AI & Automation Builder",
+    "difficulty": "easy"
+  },
+  {
+    "id": "n8n-031",
+    "question": "A workflow receives items from a previous node and needs to send each item individually to a REST API. By default, how does n8n handle multi-item execution across nodes?",
+    "options": [
+      "n8n buffers all items and sends them in a single batch request",
+      "n8n processes each item individually through subsequent nodes unless batching is explicitly configured",
+      "n8n requires a Loop node to iterate over multiple items",
+      "n8n processes only the first item by default; additional items must be handled with a Split node"
+    ],
+    "correctAnswers": ["n8n processes each item individually through subsequent nodes unless batching is explicitly configured"],
+    "explanation": "n8n's core execution model natively processes each item in the input array individually through downstream nodes without requiring explicit loop constructs. Each node receives all items and processes them one by one. This is n8n's fundamental data-flow design. Batching requires explicit configuration (e.g., the Split In Batches node). A Loop node is not required for basic iteration. Only the first-item limitation applies to some trigger nodes, not to the general execution model.",
+    "topic": "Core Nodes & Data Flow",
+    "difficulty": "medium"
+  },
+  {
+    "id": "n8n-032",
+    "question": "Which n8n Enterprise feature allows administrators to ensure that only approved workflow versions can be deployed to the production instance?",
+    "options": [
+      "Workflow tags with 'approved' label",
+      "Role-Based Access Control preventing non-admins from editing workflows",
+      "Git-based source control with environment promotion and deployment keys",
+      "The Publish button requiring two-step confirmation"
+    ],
+    "correctAnswers": ["Git-based source control with environment promotion and deployment keys"],
+    "explanation": "n8n Enterprise's Git integration and environment management allow organizations to version workflows in Git, require pull request reviews or approval gates before promotion, and use deployment keys to push approved versions to production. Workflow tags and RBAC are governance controls but do not enforce a promotion gate. The Publish button controls the live/draft state within a single instance but does not enforce cross-environment approval flows.",
+    "topic": "Enterprise Features",
+    "difficulty": "hard"
+  },
+  {
+    "id": "n8n-033",
+    "question": "Litware's team notices that their n8n workflow produces different outputs in test mode compared to live execution. Which factor is most likely responsible?",
+    "options": [
+      "Test mode uses a different LLM model than production",
+      "Test mode uses pinned data from a previous execution rather than live data from triggers",
+      "Test mode disables all outgoing HTTP requests",
+      "Test mode enforces a 10-second execution timeout that production does not"
+    ],
+    "correctAnswers": ["Test mode uses pinned data from a previous execution rather than live data from triggers"],
+    "explanation": "When testing workflows, n8n allows pinning data -- replaying previously captured trigger or node output instead of waiting for a real event. If pinned data differs from current live data (different payload structure, missing fields, stale values), test behavior diverges from production. n8n does not use different LLM models between modes, does not block HTTP requests in test mode (those are explicit configurations), and does not impose different timeout rules by default.",
+    "topic": "Testing & Debugging",
+    "difficulty": "medium"
+  },
+  {
+    "id": "n8n-034",
+    "question": "A workflow triggers from a Slack event, enriches data via an external API, and then writes results to Google Sheets. The team wants to track how much human time this workflow saves monthly. Which feature supports this?",
+    "options": [
+      "The Insights dashboard with the Time Saved node",
+      "The n8n execution log export to a spreadsheet",
+      "A custom Code node calculating execution duration",
+      "n8n's built-in SLA reporting"
+    ],
+    "correctAnswers": ["The Insights dashboard with the Time Saved node"],
+    "explanation": "The Time Saved node (introduced in n8n's late 2025 releases) allows workflows to declare how much human time they replace per execution. The Insights dashboard aggregates this data to report total time saved across all workflows and time periods. This is the platform-native ROI measurement feature. Execution log exports provide raw data without time-saved context. Code nodes can calculate timing but lose data after execution. n8n has no built-in SLA reporting module.",
+    "topic": "Observability & Insights",
+    "difficulty": "medium"
+  },
+  {
+    "id": "n8n-035",
+    "question": "Fabrikam wants to allow their DevOps team to manage infrastructure-related credentials in n8n while preventing them from accessing marketing automation credentials. Which n8n Enterprise feature enables this?",
+    "options": [
+      "Separate n8n instances for each team",
+      "Role-Based Access Control with project-level credential isolation and custom role scopes",
+      "Workflow tags restricting which users can view specific workflows",
+      "API-key-based credential filtering"
+    ],
+    "correctAnswers": ["Role-Based Access Control with project-level credential isolation and custom role scopes"],
+    "explanation": "n8n Enterprise supports granular RBAC including custom roles, per-project credential isolation, and per-secret scope permissions (added March 2026). This allows credentials to be scoped to specific projects or teams, preventing cross-team access without needing separate instances. Workflow tags are organizational labels without security enforcement. API key filtering is not a credential access control mechanism in n8n.",
+    "topic": "Enterprise Features",
+    "difficulty": "hard"
+  },
+  {
+    "id": "n8n-036",
+    "question": "An n8n workflow must call an external service that requires OAuth 2.0 authorization. The user does not want to manage token refresh manually. How does n8n handle this?",
+    "options": [
+      "Users must build a separate refresh-token workflow and trigger it on a schedule",
+      "n8n's credential system handles OAuth 2.0 token refresh automatically as part of the credential type",
+      "OAuth 2.0 tokens must be stored in a Code node and refreshed with a manual API call",
+      "n8n only supports API key authentication, not OAuth 2.0"
+    ],
+    "correctAnswers": ["n8n's credential system handles OAuth 2.0 token refresh automatically as part of the credential type"],
+    "explanation": "n8n has built-in OAuth 2.0 credential types that store refresh tokens and automatically handle token refresh before each request. Users authorize once and n8n manages subsequent token lifecycle. Manual refresh workflows are unnecessary. n8n fully supports OAuth 2.0 alongside API keys, basic auth, and other schemes. Cloud plans additionally provide managed OAuth flows for popular services like Slack and GitHub.",
+    "topic": "Credentials & Authentication",
+    "difficulty": "medium"
+  },
+  {
+    "id": "n8n-037",
+    "question": "Which n8n node would you use to combine data from two parallel workflow branches into a single output before continuing?",
+    "options": [
+      "If node",
+      "Switch node",
+      "Merge node",
+      "Split In Batches node"
+    ],
+    "correctAnswers": ["Merge node"],
+    "explanation": "The Merge node combines data from two or more incoming branches into a single output stream, supporting multiple modes such as Append, Merge By Key, Wait (for all inputs to arrive), and Multiplex. The If and Switch nodes split data into branches; they do not combine. The Split In Batches node divides a single input array into chunks for loop processing.",
+    "topic": "Core Nodes & Data Flow",
+    "difficulty": "easy"
+  },
+  {
+    "id": "n8n-038",
+    "question": "Contoso's security team identifies that attackers are using a publicly exposed n8n webhook URL to deliver malware payloads as part of a phishing campaign. The n8n instance itself is not compromised. What is the most direct mitigation?",
+    "options": [
+      "Upgrade n8n to the latest version",
+      "Disable and regenerate the webhook URL for the affected workflow, and add authentication to webhook endpoints",
+      "Move the n8n instance behind a VPN",
+      "Delete the workflow entirely"
+    ],
+    "correctAnswers": ["Disable and regenerate the webhook URL for the affected workflow, and add authentication to webhook endpoints"],
+    "explanation": "When attackers exploit an n8n webhook URL as a phishing infrastructure endpoint (as documented by Cisco Talos in April 2026), the immediate mitigation is disabling the workflow to invalidate the URL, regenerating a new webhook path, and adding authentication (header auth or Basic Auth) to prevent unauthorized requests. Upgrading addresses code vulnerabilities, not URL-based abuse. A VPN protects access to the n8n UI, not public webhook endpoints. Deleting the workflow is a last resort that eliminates the automation entirely.",
+    "topic": "Security & CVEs",
+    "difficulty": "medium"
+  },
+  {
+    "id": "n8n-039",
+    "question": "A Litware developer receives a 'runner unhealthy' error after upgrading from n8n 1.x to 2.0 with Task Runners enabled. What is the most likely cause?",
+    "options": [
+      "The PostgreSQL database schema needs migration",
+      "The n8nio/runners image version does not match the n8n main version",
+      "Redis is not reachable from the task runner container",
+      "The Code node was deprecated and must be replaced with Function node"
+    ],
+    "correctAnswers": ["The n8nio/runners image version does not match the n8n main version"],
+    "explanation": "Task Runners use versioned n8nio/runners Docker images that must match the n8n main process version. A mismatch between the runner image version and the n8n version is the most common cause of 'unhealthy runner' errors after upgrading. Database schema migration errors produce different messages. Redis connectivity affects queue mode job distribution, not runner health directly. The Code node is still present in n8n 2.0 and was not deprecated.",
+    "topic": "n8n 2.0 Breaking Changes",
+    "difficulty": "hard"
+  },
+  {
+    "id": "n8n-040",
+    "question": "Which of the following self-hosted n8n deployment patterns provides the highest availability and allows the n8n UI and API to remain operational even if one main process fails? (Select two.)",
+    "options": [
+      "Single main process with SQLite",
+      "Multi-main queue mode with sticky-session load balancer",
+      "Multiple redundant main processes with shared PostgreSQL",
+      "Queue mode with dedicated webhook processors",
+      "Docker Compose single-node deployment with auto-restart"
+    ],
+    "correctAnswers": ["Multi-main queue mode with sticky-session load balancer", "Queue mode with dedicated webhook processors"],
+    "explanation": "Multi-main queue mode (an Enterprise feature) runs active-active main processes behind a sticky-session load balancer, providing UI/API availability even if one main fails. Dedicated webhook processors separate webhook ingestion from main processes, further isolating failure domains. A single main with SQLite is single-point-of-failure with no HA. Multiple redundant mains sharing PostgreSQL without sticky sessions causes session routing issues and is not a supported n8n HA pattern. Docker Compose auto-restart provides restart capability but not true HA -- there is still downtime during restart.",
+    "topic": "Queue Mode & Scaling",
+    "difficulty": "hard"
+  }
+]

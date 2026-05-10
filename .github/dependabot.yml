@@ -1,0 +1,37 @@
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:00"
+      timezone: Europe/Amsterdam
+    open-pull-requests-limit: 5
+    groups:
+      remotion-stack:
+        patterns:
+          - "@remotion/*"
+          - remotion
+      react-stack:
+        patterns:
+          - react
+          - react-dom
+          - "@types/react"
+
+  - package-ecosystem: docker
+    directory: /services/remotion-renderer
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:15"
+      timezone: Europe/Amsterdam
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:30"
+      timezone: Europe/Amsterdam

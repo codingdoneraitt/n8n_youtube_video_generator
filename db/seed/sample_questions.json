@@ -1,0 +1,20 @@
+[
+  {
+    "id": "sample-001",
+    "question": "Which AWS service is the best fit for serverless SQL queries directly against data stored in Amazon S3?",
+    "options": ["Amazon Redshift", "Amazon Athena", "Amazon DynamoDB", "AWS Glue DataBrew"],
+    "correctAnswers": ["Amazon Athena"],
+    "explanation": "Amazon Athena is serverless and queries data in S3 using SQL. Redshift is a data warehouse, DynamoDB is NoSQL, and DataBrew prepares data rather than querying it with SQL.",
+    "topic": "Athena",
+    "difficulty": "easy"
+  },
+  {
+    "id": "sample-002",
+    "question": "A pipeline needs real-time custom consumers with millisecond latency. Which streaming service should you choose?",
+    "options": ["Kinesis Data Streams", "Kinesis Data Firehose", "AWS Batch", "Amazon S3 Event Notifications"],
+    "correctAnswers": ["Kinesis Data Streams"],
+    "explanation": "Kinesis Data Streams supports real-time custom consumers. Firehose is near-real-time delivery with buffering and managed destinations.",
+    "topic": "Kinesis",
+    "difficulty": "medium"
+  }
+]

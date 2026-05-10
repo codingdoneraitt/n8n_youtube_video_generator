@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+PROJECT_DIR="$ROOT/n8n_practice_exam_generator"
+
+if ! git diff --cached --name-only | grep -q '^n8n_practice_exam_generator/'; then
+  exit 0
+fi
+
+cd "$PROJECT_DIR"
+
+echo "[pre-commit] n8n_practice_exam_generator checks"
+npm run check

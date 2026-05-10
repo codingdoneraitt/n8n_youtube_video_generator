@@ -1,0 +1,16 @@
+export const theme = {
+  bgPrimary: '#0b1020',
+  bgGradientStart: '#101827',
+  bgGradientMid: '#12313a',
+  bgGradientEnd: '#241b35',
+  bgCard: '#151d2f',
+  bgCardStrong: '#1f293d',
+  textPrimary: '#f8fafc',
+  textSecondary: '#cbd5e1',
+  textMuted: '#7f8ea3',
+  accent: '#f59e0b',
+  accentBlue: '#38bdf8',
+  accentGreen: '#22c55e',
+  accentRed: '#fb7185',
+  border: '#344154',
+};
