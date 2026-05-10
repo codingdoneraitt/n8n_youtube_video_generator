@@ -27,6 +27,10 @@ updates:
       day: monday
       time: "05:15"
       timezone: Europe/Amsterdam
+    ignore:
+      - dependency-name: node
+        update-types:
+          - version-update:semver-major
 
   - package-ecosystem: github-actions
     directory: /
