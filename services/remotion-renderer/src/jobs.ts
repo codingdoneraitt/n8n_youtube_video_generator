@@ -7,6 +7,8 @@ import type { RenderRequest } from './schema.js';
 import { buildPracticeExamProps } from './props.js';
 import { generateTogetherAudioAssets } from './tts.js';
 
+const renderTimeoutMs = Number(process.env.RENDER_TIMEOUT_MS || 3_600_000);
+
 export type JobStatus = 'queued' | 'rendering' | 'done' | 'failed';
 
 export interface RenderJob {
@@ -100,7 +102,7 @@ export class RenderQueue {
         inputProps: inputProps as unknown as Record<string, unknown>,
         chromiumOptions: {},
         concurrency: 1,
-        timeoutInMilliseconds: 120_000,
+        timeoutInMilliseconds: renderTimeoutMs,
         envVariables: {},
       });
 

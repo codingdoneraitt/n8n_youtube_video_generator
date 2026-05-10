@@ -103,7 +103,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const job = items[0].json;\nif (job.status === 'failed') throw new Error(job.error || 'Render failed');\nconst createdAt = Date.parse(job.createdAt || new Date().toISOString());\nconst elapsedMinutes = (Date.now() - createdAt) / 60000;\nif (elapsedMinutes > 30) throw new Error(`Render timed out after ${elapsedMinutes.toFixed(1)} minutes`);\nreturn [{ json: job }];"
+        "jsCode": "const job = items[0].json;\nif (job.status === 'failed') throw new Error(job.error || 'Render failed');\nconst createdAt = Date.parse(job.createdAt || new Date().toISOString());\nconst elapsedMinutes = (Date.now() - createdAt) / 60000;\nif (elapsedMinutes > 90) throw new Error(`Render timed out after ${elapsedMinutes.toFixed(1)} minutes`);\nreturn [{ json: job }];"
       },
       "id": "check-render-status",
       "name": "Check Render Status",
@@ -138,6 +138,29 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [2240, -120]
+    },
+    {
+      "parameters": {
+        "resume": "webhook",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "human-approval-gate",
+      "name": "Human Approval Gate",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [2480, -120],
+      "webhookId": "approve-youtube-upload"
+    },
+    {
+      "parameters": {
+        "jsCode": "const uploadEnabled = $env.YOUTUBE_UPLOAD_ENABLED === 'true';\nconst payload = items[0].json;\nif (!uploadEnabled) {\n  return [{\n    json: {\n      ...payload,\n      youtubeUpload: 'skipped',\n      reason: 'Human approval received, but YOUTUBE_UPLOAD_ENABLED is not true.',\n      nextStep: 'Set YOUTUBE_UPLOAD_ENABLED=true and replace this placeholder with the n8n YouTube upload node.'\n    }\n  }];\n}\nreturn [{\n  json: {\n    ...payload,\n    youtubeUpload: 'ready',\n    note: 'Placeholder reached after human approval. Wire the YouTube node here when upload credentials are configured.'\n  }\n}];"
+      },
+      "id": "youtube-upload-placeholder",
+      "name": "YouTube Upload Placeholder",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2720, -120]
     }
   ],
   "connections": {
@@ -170,6 +193,12 @@
         [{ "node": "Render Complete Summary", "type": "main", "index": 0 }],
         [{ "node": "Wait For Render", "type": "main", "index": 0 }]
       ]
+    },
+    "Render Complete Summary": {
+      "main": [[{ "node": "Human Approval Gate", "type": "main", "index": 0 }]]
+    },
+    "Human Approval Gate": {
+      "main": [[{ "node": "YouTube Upload Placeholder", "type": "main", "index": 0 }]]
     }
   },
   "settings": {

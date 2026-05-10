@@ -19,7 +19,7 @@ Then:
 2. Create the local n8n owner account when prompted.
 3. Import [n8n/workflows/01_generate_practice_exam_walkthrough.json](/Volumes/WorkSSD/repositories/StudyBuddies/n8n_practice_exam_generator/n8n/workflows/01_generate_practice_exam_walkthrough.json).
 4. Open the imported workflow and click **Execute workflow**.
-5. Wait for the renderer status to become `done`.
+5. Wait for the renderer status to become `done`. A fully narrated 40-question render can take a while.
 6. Open the MP4 from `data/artifacts/<job-id>/practice-exam-walkthrough.mp4`.
 7. Stop the stack with `Ctrl+C`, or from another terminal:
 
@@ -38,7 +38,7 @@ The generated video is a long-form 16:9 walkthrough:
 - midpoint checkpoint after question 20
 - outro slide with review prompt
 
-YouTube upload is intentionally disabled. The renderer writes `youtube-metadata.json` next to the MP4, and the YouTube workflow is a guarded placeholder.
+YouTube upload is intentionally guarded. The main workflow pauses at a human approval gate after rendering, then reaches a YouTube upload placeholder that still requires `YOUTUBE_UPLOAD_ENABLED=true`.
 
 ## Architecture
 
@@ -121,19 +121,19 @@ npm run hooks:install
 5. Submit a render job to the Remotion renderer.
 6. Poll render status until complete.
 7. Build deterministic YouTube metadata.
-8. Stop there for now. YouTube upload is a manual-only placeholder.
+8. Pause at a human approval gate before the YouTube upload placeholder.
 
 The Postgres schema and reservation queries are included for the production version, where repeated uploads must track used, failed, and published questions.
 
-## YouTube Placeholder
+## YouTube Approval Gate
 
-The renderer writes a `youtube-metadata.json` next to the MP4. The workflow [03_upload_to_youtube_placeholder.json](/Volumes/WorkSSD/repositories/StudyBuddies/n8n_practice_exam_generator/n8n/workflows/03_upload_to_youtube_placeholder.json) is manual-only and guarded by:
+The renderer writes a `youtube-metadata.json` next to the MP4. The main workflow then pauses at **Human Approval Gate** before the upload placeholder. The placeholder remains guarded by:
 
 ```text
 YOUTUBE_UPLOAD_ENABLED=true
 ```
 
-Until that is set, it only reports that upload is skipped.
+Until that is set, the workflow reports that upload is skipped even after approval.
 
 ## Safety Patterns
 

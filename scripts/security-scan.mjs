@@ -30,8 +30,9 @@ const compose = await readFile(join(root, 'docker-compose.yml'), 'utf-8');
 requireText(compose, 'N8N_BLOCK_ENV_ACCESS_IN_NODE: "true"', 'docker-compose.yml: Code nodes must not read arbitrary env vars');
 requireText(compose, 'N8N_RESTRICT_FILE_ACCESS_TO: /files', 'docker-compose.yml: file access must be restricted to /files');
 
-const uploadWorkflow = await readFile(join(root, 'n8n/workflows/03_upload_to_youtube_placeholder.json'), 'utf-8');
-requireText(uploadWorkflow, 'YOUTUBE_UPLOAD_ENABLED', 'YouTube placeholder must stay guarded by YOUTUBE_UPLOAD_ENABLED');
+const mainWorkflow = await readFile(join(root, 'n8n/workflows/01_generate_practice_exam_walkthrough.json'), 'utf-8');
+requireText(mainWorkflow, 'Human Approval Gate', 'Main workflow must keep the human approval gate before YouTube upload');
+requireText(mainWorkflow, 'YOUTUBE_UPLOAD_ENABLED', 'YouTube placeholder must stay guarded by YOUTUBE_UPLOAD_ENABLED');
 
 if (failures.length > 0) {
   for (const failure of failures) console.error(`fail ${failure}`);

@@ -1,6 +1,6 @@
 # YouTube Upload Placeholder
 
-YouTube upload is intentionally not part of the active POC path yet.
+YouTube upload is part of the main workflow as a guarded placeholder.
 
 The renderer writes:
 
@@ -9,21 +9,16 @@ data/artifacts/<job-id>/practice-exam-walkthrough.mp4
 data/artifacts/<job-id>/youtube-metadata.json
 ```
 
-The placeholder workflow is:
-
-```text
-03_upload_to_youtube_placeholder.json
-```
-
-It is manual-trigger only. It exits unless:
+The main workflow pauses at **Human Approval Gate** after the MP4 is rendered.
+After approval, the placeholder exits unless:
 
 ```text
 YOUTUBE_UPLOAD_ENABLED=true
 ```
 
-When ready, replace the `No Operation` node with the n8n YouTube node:
+When ready, replace the placeholder Code node with the n8n YouTube node:
 
 1. Download `artifactUrl` as binary.
 2. Download `metadataUrl` as JSON.
 3. Upload MP4 with title, description, and tags.
-4. Keep the `Upload Guard` node so accidental uploads are impossible.
+4. Keep the `Human Approval Gate` and `YOUTUBE_UPLOAD_ENABLED` guard so accidental uploads are impossible.

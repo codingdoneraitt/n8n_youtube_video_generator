@@ -2,7 +2,7 @@
 
 ## Generate Practice Exam Walkthrough
 
-The checked-in workflow is a safe dry-run starter. For the first POC, keep it file-based:
+The checked-in workflow is the full local POC path:
 
 1. **Read Binary/File**
    - Read `/files/questions.json`.
@@ -10,13 +10,17 @@ The checked-in workflow is a safe dry-run starter. For the first POC, keep it fi
    - Parse the array.
    - Slice the first 40.
    - Normalize `question`, `options`, `correctAnswers`, `explanation`.
-3. **Optional Loop: Together AI TTS**
-   - Skip while `dryRun=true`.
-   - Add `audioAssets[]` when enabled.
+3. **Together AI TTS**
+   - The renderer generates narration when `dryRun=false`.
+   - `TOGETHER_API_KEY` must be set in `.env`.
 4. **HTTP Request: Start Render**
    - `POST {{$env.RENDERER_BASE_URL}}/render`.
 5. **Wait + Poll**
    - Poll `/jobs/:id` until `done` or `failed`.
+6. **Human Approval Gate**
+   - Pause before any upload action.
+7. **YouTube Upload Placeholder**
+   - Reports skipped unless `YOUTUBE_UPLOAD_ENABLED=true`.
 
 The production version replaces file selection with Postgres state:
 
@@ -39,8 +43,3 @@ The production version replaces file selection with Postgres state:
    - Upload only when `YOUTUBE_DRY_RUN=false`.
 7. **Postgres update**
    - Mark questions published or failed.
-
-## Error Handler
-
-Use this as the workflow-level error workflow. Extend it with Slack/Discord and
-Postgres failure updates once credentials are available.
