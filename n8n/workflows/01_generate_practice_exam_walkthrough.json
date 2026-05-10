@@ -50,16 +50,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{$env.RENDERER_BASE_URL || 'http://remotion-renderer:3030'}}/render",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "=Bearer {{$env.RENDERER_AUTH_TOKEN || ''}}"
-            }
-          ]
-        },
+        "url": "http://remotion-renderer:3030/render",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{$json}}"
@@ -84,16 +75,7 @@
     },
     {
       "parameters": {
-        "url": "={{$env.RENDERER_BASE_URL || 'http://remotion-renderer:3030'}}/jobs/{{$json.id}}",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "=Bearer {{$env.RENDERER_AUTH_TOKEN || ''}}"
-            }
-          ]
-        }
+        "url": "=http://remotion-renderer:3030/jobs/{{$json.id}}"
       },
       "id": "render-status",
       "name": "Render Status",
@@ -154,7 +136,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const uploadEnabled = $env.YOUTUBE_UPLOAD_ENABLED === 'true';\nconst payload = items[0].json;\nif (!uploadEnabled) {\n  return [{\n    json: {\n      ...payload,\n      youtubeUpload: 'skipped',\n      reason: 'Human approval received, but YOUTUBE_UPLOAD_ENABLED is not true.',\n      nextStep: 'Set YOUTUBE_UPLOAD_ENABLED=true and replace this placeholder with the n8n YouTube upload node.'\n    }\n  }];\n}\nreturn [{\n  json: {\n    ...payload,\n    youtubeUpload: 'ready',\n    note: 'Placeholder reached after human approval. Wire the YouTube node here when upload credentials are configured.'\n  }\n}];"
+        "jsCode": "const uploadEnabled = false;\nconst payload = items[0].json;\nif (!uploadEnabled) {\n  return [{\n    json: {\n      ...payload,\n      youtubeUpload: 'skipped',\n      reason: 'Human approval received, but YouTube upload is disabled for this POC.',\n      nextStep: 'Replace this placeholder with the n8n YouTube upload node and explicitly gate it before enabling production uploads. Historical guard: YOUTUBE_UPLOAD_ENABLED=true.'\n    }\n  }];\n}\nreturn [{\n  json: {\n    ...payload,\n    youtubeUpload: 'ready',\n    note: 'Placeholder reached after human approval. Wire the YouTube node here when upload credentials are configured.'\n  }\n}];"
       },
       "id": "youtube-upload-placeholder",
       "name": "YouTube Upload Placeholder",
