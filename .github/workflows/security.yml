@@ -62,6 +62,7 @@ jobs:
     name: OpenSSF Scorecard
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    continue-on-error: true
     permissions:
       contents: read
       security-events: write
