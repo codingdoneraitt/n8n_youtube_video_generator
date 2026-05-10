@@ -6,6 +6,7 @@ import { renderMedia, selectComposition } from '@remotion/renderer';
 import type { RenderRequest } from './schema.js';
 import { buildPracticeExamProps } from './props.js';
 import { generateTogetherAudioAssets } from './tts.js';
+import { logRenderer } from './logger.js';
 
 const renderTimeoutMs = Number(process.env.RENDER_TIMEOUT_MS || 3_600_000);
 
@@ -40,6 +41,12 @@ export class RenderQueue {
     const job: RenderJob = { id, status: 'queued', createdAt: now, updatedAt: now };
     this.jobs.set(id, job);
 
+    logRenderer('job_queued', {
+      jobId: id,
+      questions: request.questions.length,
+      dryRun: request.dryRun,
+      queueDepth: this.queue.length,
+    });
     void this.enqueue(() => this.render(job, request));
     return job;
   }
@@ -69,31 +76,56 @@ export class RenderQueue {
 
     try {
       this.update(job.id, { status: 'rendering' });
+      logRenderer('job_rendering', { jobId: job.id, jobDir });
       await fs.mkdir(publicDir, { recursive: true });
 
+      logRenderer('audio_prepare_start', {
+        jobId: job.id,
+        providedAudioAssets: request.audioAssets.length,
+        dryRun: request.dryRun,
+      });
       const audioAssets = request.audioAssets.length > 0 || request.dryRun
         ? request.audioAssets
         : await generateTogetherAudioAssets(request.questions);
+      logRenderer('audio_prepare_done', { jobId: job.id, audioAssets: audioAssets.length });
 
       for (const asset of audioAssets) {
         await fs.writeFile(path.join(publicDir, asset.fileName), Buffer.from(asset.contentBase64, 'base64'));
       }
+      logRenderer('audio_assets_written', { jobId: job.id, audioAssets: audioAssets.length });
 
       const inputProps = buildPracticeExamProps({ ...request, audioAssets });
       await fs.writeFile(path.join(jobDir, 'input-props.json'), JSON.stringify(inputProps, null, 2));
+      logRenderer('input_props_written', {
+        jobId: job.id,
+        durationInFrames: inputProps.durationInFrames,
+        fps: inputProps.fps,
+        questions: inputProps.questions.length,
+      });
 
       const entryPoint = path.resolve(process.cwd(), '../../remotion/index.ts');
+      logRenderer('bundle_start', { jobId: job.id, entryPoint });
       const serveUrl = await bundle({
         entryPoint,
         publicDir,
         webpackOverride: (config) => config,
       });
+      logRenderer('bundle_done', { jobId: job.id });
+      logRenderer('composition_select_start', { jobId: job.id });
       const composition = await selectComposition({
         serveUrl,
         id: 'PracticeExamWalkthrough',
         inputProps: inputProps as unknown as Record<string, unknown>,
       });
+      logRenderer('composition_select_done', {
+        jobId: job.id,
+        width: composition.width,
+        height: composition.height,
+        frames: composition.durationInFrames,
+        fps: composition.fps,
+      });
 
+      logRenderer('render_media_start', { jobId: job.id, outputPath, timeoutMs: renderTimeoutMs });
       await renderMedia({
         serveUrl,
         composition,
@@ -108,9 +140,11 @@ export class RenderQueue {
 
       const stat = await fs.stat(outputPath);
       if (stat.size < 10_000) throw new Error('Render produced an unexpectedly small MP4');
+      logRenderer('render_media_done', { jobId: job.id, outputPath, bytes: stat.size });
 
       const metadataPath = path.join(jobDir, 'youtube-metadata.json');
       await fs.writeFile(metadataPath, JSON.stringify(buildYouTubeMetadata(inputProps), null, 2));
+      logRenderer('metadata_written', { jobId: job.id, metadataPath });
 
       this.update(job.id, {
         status: 'done',
@@ -119,11 +153,20 @@ export class RenderQueue {
         metadataPath,
         metadataUrl: `${this.publicBaseUrl}/artifacts/${job.id}/youtube-metadata.json`,
       });
+      logRenderer('job_done', {
+        jobId: job.id,
+        outputUrl: `${this.publicBaseUrl}/artifacts/${job.id}/practice-exam-walkthrough.mp4`,
+        metadataUrl: `${this.publicBaseUrl}/artifacts/${job.id}/youtube-metadata.json`,
+      });
     } catch (error) {
       this.update(job.id, {
         status: 'failed',
         error: error instanceof Error ? error.message : String(error),
       });
+      logRenderer('job_failed', {
+        jobId: job.id,
+        error: error instanceof Error ? error.message : String(error),
+      }, 'error');
     }
   }
 

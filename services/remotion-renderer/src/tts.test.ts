@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { generateTogetherAudioAssets } from './tts.js';
 import type { RenderQuestion } from './schema.js';
 
+process.env.RENDERER_LOG_LEVEL = 'silent';
+
 const baseQuestion: RenderQuestion = {
   id: 'q1',
   question: 'Which node branches on a condition?',

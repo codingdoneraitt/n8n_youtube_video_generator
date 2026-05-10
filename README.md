@@ -85,6 +85,17 @@ The renderer health endpoint is:
 curl http://localhost:3030/healthz
 ```
 
+## Runtime Logs
+
+When `npm start` is attached, Docker shows logs from `n8n`, `postgres`, and `remotion-renderer` in the same terminal. For a cleaner view in another terminal:
+
+```bash
+docker compose logs -f remotion-renderer
+docker compose logs -f n8n
+```
+
+The renderer emits structured JSON events for `render_request_accepted`, `tts_question_start`, `tts_question_done`, `bundle_start`, `render_media_start`, `render_media_done`, and `job_done`. n8n also shows every node input/output in the execution view, which is usually the fastest way to debug workflow-level failures.
+
 ## File-Based Render API
 
 ```bash

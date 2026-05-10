@@ -3,6 +3,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { RenderRequestSchema } from './schema.js';
 import { RenderQueue } from './jobs.js';
+import { logRenderer } from './logger.js';
 
 const port = Number(process.env.PORT || 3030);
 const storageDir = process.env.STORAGE_DIR || path.resolve(process.cwd(), '../../data/artifacts');
@@ -12,6 +13,15 @@ const authToken = process.env.RENDERER_AUTH_TOKEN || '';
 const maxBodyBytes = Math.max(1024, Number(process.env.MAX_BODY_BYTES || 25 * 1024 * 1024));
 
 const queue = new RenderQueue(storageDir, publicBaseUrl, maxConcurrency);
+
+logRenderer('configured', {
+  port,
+  storageDir,
+  publicBaseUrl,
+  maxConcurrency,
+  authEnabled: Boolean(authToken),
+  maxBodyBytes,
+});
 
 async function readJson(req: http.IncomingMessage): Promise<unknown> {
   const chunks: Buffer[] = [];
@@ -72,10 +82,18 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'POST' && url.pathname === '/render') {
       const parsed = RenderRequestSchema.safeParse(await readJson(req));
       if (!parsed.success) {
+        logRenderer('render_request_rejected', {
+          issues: parsed.error.issues.length,
+        }, 'warn');
         send(res, 400, { error: 'Invalid render request', issues: parsed.error.issues });
         return;
       }
       const job = await queue.create(parsed.data);
+      logRenderer('render_request_accepted', {
+        jobId: job.id,
+        questions: parsed.data.questions.length,
+        dryRun: parsed.data.dryRun,
+      });
       send(res, 202, job);
       return;
     }
@@ -106,6 +124,10 @@ const server = http.createServer(async (req, res) => {
     send(res, 404, { error: 'Not found' });
   } catch (error) {
     const status = typeof error === 'object' && error && 'statusCode' in error ? Number(error.statusCode) : 500;
+    logRenderer('request_failed', {
+      status,
+      error: error instanceof Error ? error.message : String(error),
+    }, 'error');
     send(res, status, { error: error instanceof Error ? error.message : String(error) });
   }
 });

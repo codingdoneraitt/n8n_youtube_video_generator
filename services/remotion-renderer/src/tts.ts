@@ -1,4 +1,5 @@
 import type { RenderQuestion } from './schema.js';
+import { logRenderer } from './logger.js';
 
 export interface GeneratedAudioAsset {
   fileName: string;
@@ -17,6 +18,12 @@ export async function generateTogetherAudioAssets(questions: RenderQuestion[]): 
   const assets: GeneratedAudioAsset[] = [];
 
   for (const [index, question] of questions.entries()) {
+    logRenderer('tts_question_start', {
+      questionNumber: index + 1,
+      totalQuestions: questions.length,
+      model,
+      voice,
+    });
     const response = await fetch('https://api.together.ai/v1/audio/speech', {
       method: 'POST',
       headers: {
@@ -41,6 +48,11 @@ export async function generateTogetherAudioAssets(questions: RenderQuestion[]): 
       throw new Error(`Together TTS returned an unexpectedly small audio file for question ${index + 1}`);
     }
 
+    logRenderer('tts_question_done', {
+      questionNumber: index + 1,
+      totalQuestions: questions.length,
+      bytes: buffer.length,
+    });
     assets.push({
       fileName: `q-${String(index + 1).padStart(2, '0')}.mp3`,
       contentBase64: buffer.toString('base64'),
