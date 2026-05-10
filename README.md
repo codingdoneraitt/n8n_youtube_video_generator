@@ -56,6 +56,8 @@ The first golden path renders one long-form walkthrough video, not 40 Shorts.
 
 ![Architecture](diagrams/architecture.svg)
 
+![Component and container map](diagrams/component-container.svg)
+
 ![Manual render flow](diagrams/manual-render-flow.svg)
 
 ![Quality gates](diagrams/quality-gates.svg)

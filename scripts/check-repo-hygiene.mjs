@@ -13,6 +13,8 @@ const requiredFiles = [
   'docker-compose.yml',
   'diagrams/architecture.drawio',
   'diagrams/architecture.svg',
+  'diagrams/component-container.drawio',
+  'diagrams/component-container.svg',
   'diagrams/manual-render-flow.drawio',
   'diagrams/manual-render-flow.svg',
   'diagrams/quality-gates.drawio',
@@ -41,9 +43,11 @@ await assertContains('SECURITY.md', 'npm run security', 'SECURITY.md must docume
 await assertContains('.github/workflows/ci.yml', 'docker-quality', 'CI must verify Docker build quality');
 await assertContains('.github/workflows/security.yml', 'CodeQL', 'Security workflow must run CodeQL');
 await assertContains('diagrams/architecture.drawio', '<mxfile', 'architecture diagram must be a draw.io file');
+await assertContains('diagrams/component-container.drawio', '<mxfile', 'component container diagram must be a draw.io file');
 await assertContains('diagrams/manual-render-flow.drawio', '<mxfile', 'manual render diagram must be a draw.io file');
 await assertContains('diagrams/quality-gates.drawio', '<mxfile', 'quality gates diagram must be a draw.io file');
 await assertContains('diagrams/architecture.svg', '<svg', 'architecture preview must be an SVG file');
+await assertContains('diagrams/component-container.svg', '<svg', 'component container preview must be an SVG file');
 await assertContains('diagrams/manual-render-flow.svg', '<svg', 'manual render preview must be an SVG file');
 await assertContains('diagrams/quality-gates.svg', '<svg', 'quality gates preview must be an SVG file');
 
