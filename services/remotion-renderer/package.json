@@ -13,7 +13,7 @@
     "coverage": "node --test --experimental-test-coverage --test-coverage-lines=100 --test-coverage-functions=100 --test-coverage-branches=90 --test-coverage-include='dist/props.js' --test-coverage-include='dist/schema.js' --test-coverage-include='dist/tts.js' --test-coverage-exclude='dist/**/*.test.js' dist/**/*.test.js"
   },
   "dependencies": {
-    "@remotion/bundler": "^4.0.0",
+    "@remotion/bundler": "^4.0.462",
     "@remotion/renderer": "^4.0.0",
     "remotion": "^4.0.0",
     "react": "^19.0.0",
